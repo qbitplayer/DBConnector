@@ -81,6 +81,7 @@ public class DBMComments extends DBManager<Comments>{
 			preparedStatement = getConnected()
 						.prepareStatement(strSQL);
 			
+			
 			 preparedStatement.setString(1,object.getMyUser());
 			 preparedStatement.setString(2,object.getEmail());
 			 preparedStatement.setString(3,object.getWebpage());
@@ -106,78 +107,32 @@ public class DBMComments extends DBManager<Comments>{
 	
 	
 	
-	/**
-	 * recupera todos los tegistros con la condicion que: 
-	 * 
-	 * la columna column operador value, donde operador puede ser: 
-	 *    =	'value'
-	 *    !='value'
-	 *    >	'value'
-	 *    <	'value'
-	 *    >='value'
-	 *    <='value'
-	 *    BETWEEN	 ? 
-	 *    LIKE	'value%'    // use el % para indicar cualquier cosa
-	 *    IN	  ? 
-	 * @param string 
-	 * 
-	 */
-	
+
 
 
 	@Override
-	protected ArrayList<Comments> resultSetToGeneric(ResultSet resultSet) throws SQLException {  
-		 ArrayList<Comments> list = new ArrayList<>(); 
-		 
-		 while (resultSet.next()) {
-	        	
-	        	// lee el resultado i 
-	        	int id = resultSet.getInt("id");
-	            String user = resultSet.getString("myuser");
-	            String email = resultSet.getString("email");
-	            String webpage = resultSet.getString("webpage");
-	            String summary = resultSet.getString("summary");
-	            Date date = resultSet.getDate("datum");
-	            String comments = resultSet.getString("comments");
-	       
-
-	            Comments comment = new Comments(); 
-	       
-	            comment.setId(id);
-	            comment.setEmail(email);
-	            comment.setDatum(date);
-	            comment.setMyUser(user);
-	            comment.setSummary(summary);
-	            comment.setComments(comments);
-	            comment.setWebpage(webpage);
-	            list.add(comment);  
-	        }
-		 
-		 return list; 
-	}
-	
-
-
-	/**
-	 * Verifica si la columna esta en la tabla
-	 * @param column
-	 */
-	@Override
-	protected void checkColumn(String column) {
-		final ArrayList<String> columns = new ArrayList<String>(
-				Arrays.asList("id", "myuser", "email","datum","webpage","summary","comments"));
-		
-		if(!columns.contains(column))
-			throw new RuntimeException("Error la columna " 
-					+  column + "no hace parte de la tabla " + getDbTable()); 
-		
+	protected Comments mapDbToObject(ResultSet resultSet) throws SQLException {
+		// lee el resultado i 
+    	int id = resultSet.getInt("id");
+        String user = resultSet.getString("myuser");
+        String email = resultSet.getString("email");
+        String webpage = resultSet.getString("webpage");
+        String summary = resultSet.getString("summary");
+        Date date = resultSet.getDate("datum");
+        String comments = resultSet.getString("comments");
+   
+        Comments comment = new Comments();    
+        comment.setId(id);
+        comment.setEmail(email);
+        comment.setDatum(date);
+        comment.setMyUser(user);
+        comment.setSummary(summary);
+        comment.setComments(comments);
+        comment.setWebpage(webpage);
+        return comment; 
 	}
 
 
-	
-	
-	
-	
 	
 	
 	/**
@@ -190,5 +145,6 @@ public class DBMComments extends DBManager<Comments>{
 		}
 			
 	}
+
 
 }

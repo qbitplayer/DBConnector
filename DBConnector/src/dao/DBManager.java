@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -104,15 +105,9 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	@Override
 	public abstract T insert(T object) throws SQLException;   
 
-	@Override
-	public abstract void update(T object) throws SQLException; 
+	
 
 
-	/*@Override
-	public abstract ArrayList<T> select(String column, String operator, String value) throws SQLException; 
-    */
-	
-	
 	
 	@Override
 	public T select(int id) throws SQLException { 
@@ -140,10 +135,26 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	}
 
 	
-	
+	/**
+	 * recupera todos los tegistros con la condicion que: 
+	 * 
+	 * la columna column operador value, donde operador puede ser: 
+	 *    =	'value'
+	 *    !='value'
+	 *    >	'value'
+	 *    <	'value'
+	 *    >='value'
+	 *    <='value'
+	 *    BETWEEN	 ? 
+	 *    LIKE	'value%'    // use el % para indicar cualquier cosa
+	 *    IN	  ? 
+	 * @param string 
+	 * @throws SQLException 
+	 * 
+	 */
+
 	@Override
 	public ArrayList<T> select(String column, String operator, String value)  throws SQLException { 
-		checkColumn(column); 
 		checkOperator(operator);  
 		String strSQL = "SELECT * FROM "+
 				getDbTable() +" WHERE "+ column +" "+ operator +" "+ value;
@@ -170,9 +181,31 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	}
 	
 	
-	protected abstract void checkColumn(String column); 
+	/**
+	 * Transforma el resultado de una consulta resultSet en un objeto de tipo 
+	 * T
+	 * @param resultSet
+	 * @return lista de objetos de tipo T 
+	 * @throws SQLException
+	 */
+	protected  ArrayList<T> resultSetToGeneric(ResultSet resultSet)
+			throws SQLException{
+		
+		ArrayList<T> list = new ArrayList<>(); 		
+		 while (resultSet.next()) {
+			 
+			    T generic= mapDbToObject(resultSet); 
+	            list.add(generic);  
+	        		 
+		 }		 
+		 return list; 		
+	}
+	
+	protected abstract T mapDbToObject(ResultSet resultSet) throws SQLException;  
 
-	protected abstract ArrayList<T> resultSetToGeneric(ResultSet resultSet) throws SQLException ; 
+
+	
+	
 	
 	/** Verifica que la operacion sea valida  
 	 * 
@@ -186,9 +219,9 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 					+  operator + "no es valido. "); 
 	}
 
-	
-
-
+	/**
+	 * Cerra la conexion 
+	 */
 	@Override
 	public void close() {
 	        try {

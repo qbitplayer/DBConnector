@@ -74,16 +74,13 @@ public class TestDBManager {
 		}
 
 		@Override
-		protected void checkColumn(String column) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		protected ArrayList<?> resultSetToGeneric(ResultSet resultSet) throws SQLException {
+		protected Object mapDbToObject(ResultSet resultSet) throws SQLException {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+	
+
 	}
 
 		
