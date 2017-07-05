@@ -1,25 +1,25 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
-import com.mysql.jdbc.CommunicationsException;
+import model.Table;
 
-import model.Comments;
+/*
+ * <T extends Table> garantiza que todo T debe extender de Table
+ */
 
-public abstract class DBManager<T> implements DBAccess<T>  { 
+public abstract class DBManager<T extends Table> implements DBAccess<T>  { 
 	
 	private String dbName;
 	private final String dbTable;
-	
-	
-
 	private String dbUri;
 	private Connection connect;
 	
@@ -102,13 +102,18 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	}
 	
 	
-	@Override
-	public abstract T insert(T object) throws SQLException;   
+	//@Override
+	//public abstract T insert(T object) throws SQLException;   
+
+
 
 	
-
-
 	
+	protected HashMap<String,Object> mapObjectToDb(T object){
+		return null; 
+	}
+
+
 	@Override
 	public T select(int id) throws SQLException { 
 		String strSQL = "SELECT * FROM "+
@@ -207,6 +212,9 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	
 	
 	
+	/*********************  SQL statements *****************************/
+
+	
 	/** Verifica que la operacion sea valida  
 	 * 
 	 * @param operator
@@ -252,5 +260,113 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	protected Connection getConnected(){  
 		return connect; 
 	}
+	
+
+
+	@Override
+	public int insert(T object) throws SQLException { 	
+		int lastInsertedId = -1; 
+		HashMap<String,Object> mapColumn = mapObjectToDb(object); 		
+		String strSQL = getAnSQLInsert(mapColumn);  		
+		     // try con algumentos cierra automaticamente al finalizar
+		
+			 try(PreparedStatement preparedStatement =  getConnected()
+						.prepareStatement(strSQL,Statement.RETURN_GENERATED_KEYS)) {
+				 int i=1; 
+				 for (String column :mapColumn.keySet())						 
+					preparedStatement.setObject(i++,mapColumn.get(column));  
+ 				  
+				 preparedStatement.executeUpdate();	        
+			        ResultSet rs = preparedStatement.getGeneratedKeys();
+			        
+			        if(rs.next())
+			        	   lastInsertedId = rs.getInt(1);  
+	
+			        object.setId(lastInsertedId);
+			        
+			} catch (SQLException e) {
+		        throw e;	        
+			}
+			 
+	 return lastInsertedId; 
+	}
+	
+	
+	@Override
+	public void update(T object) throws SQLException { 		
+		HashMap<String,Object> mapColumn = mapObjectToDb(object); 		
+		String strSQL = getAnSQLUpdate(mapColumn); 		
+		     // try con algumentos cierra automaticamente al finalizar
+			 try(PreparedStatement preparedStatement = getConnected()
+						.prepareStatement(strSQL)) {
+				 int i=1; 
+				 for (String column :mapColumn.keySet())						 
+					preparedStatement.setObject(i++,mapColumn.get(column));  
+ 				  
+				 preparedStatement.setInt(i,object.getId());
+				 preparedStatement.executeUpdate();	     
+				
+			} catch (SQLException e) {
+		        throw e;	        
+			}			 		
+	}
+	
+	/**
+	 *  " myuser=?, email=?, webpage = ?,datum=?, summary=?, comments=?  WHERE id=?"
+	 * @param mapObject
+	 * @return
+	 */
+	
+	private String getAnSQLUpdate(HashMap<String,Object> mapObject) {
+		  StringBuilder strSQL = new StringBuilder("UPDATE "+ getDbTable() + " SET "); 
+		  
+		  int index =0;
+		  int size =  mapObject.keySet().size(); 
+		  for (String column : mapObject.keySet()) { 
+			  strSQL.append(column);
+			  if(index++<size-1)
+				  strSQL.append("=?, "); 
+			  else
+			      strSQL.append("=? "); 
+		   }
+		  
+		  strSQL.append(" WHERE id=? "); 
+		  
+		return strSQL.toString();	
+	}
+	
+	/**
+	 * 
+	 * INSERT INTO getDbTable() (id, column2, column3, column4, column5, column6)
+	 * VALUES (default, ?, ?, ?, ?, ?);
+	 * 
+	 * 
+	 * @param mapObject
+	 * @return
+	 */
+	private String getAnSQLInsert(HashMap<String,Object> mapObject) {
+		  StringBuilder strSQL = new StringBuilder("INSERT INTO "+ getDbTable()); 
+		  StringBuilder columns = new StringBuilder(" ( id, " );
+		  StringBuilder values = new StringBuilder(" values (default, " );
+		  int index =0;
+		  int size =  mapObject.keySet().size();
+		  
+		  for (String column : mapObject.keySet()){ 		
+			  if(index++<size-1){
+				 values.append(" ?, "); 
+			     columns.append(column + ", "); 
+			  }else{
+				  values.append(" ?)");
+				  columns.append(column + ")");
+			  }
+		   }
+		  
+		  strSQL.append(columns); 
+		  strSQL.append(values); 
+		  
+	  return strSQL.toString();	
+	}
+	
+	
 	
 }

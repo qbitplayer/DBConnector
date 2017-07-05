@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import dao.DBManager;
 import model.Comments;
+import model.Table;
 
 public class TestDBManager {
 
@@ -21,8 +22,6 @@ public class TestDBManager {
 		try {
 			
 			dbManager.connect("root","poodb");
-			
-	
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -64,22 +63,13 @@ public class TestDBManager {
 			super("localhost", "dbtest","comments"); 
 	    }
 
-		@Override
-		public Object insert(Object object) {
-			return null;
-		}
 
 		@Override
-		public void update(Object object) {
-		}
-
-		@Override
-		protected Object mapDbToObject(ResultSet resultSet) throws SQLException {
+		protected Table mapDbToObject(ResultSet resultSet) throws SQLException {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
-	
 
 	}
 

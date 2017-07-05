@@ -8,11 +8,10 @@ import java.sql.Date;
  *
  */
 
-public class Comments {
+public class Comments  extends Table{
 	    
 	  
-		private int id; 
-		
+
 	    private String myUser; 
 		private String email;
 		private String webpage; 
@@ -21,16 +20,10 @@ public class Comments {
 		private String comments; 
 		
 		public Comments(){
-			id=-1; 
+			setId(-1); 
 		}
 		
 		
-		public int getId() {
-			return id;
-		}
-		public void setId(int id) {
-			this.id = id;
-		}
 		public String getMyUser() {
 			return myUser;
 		}

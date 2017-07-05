@@ -7,10 +7,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import dao.DBMComments;
-import dao.DBManager;
 import model.Comments;
-import test.TestDBManager.MockManager;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestDBMComments {
 
 	
@@ -24,6 +25,9 @@ public class TestDBMComments {
 		try {
 			dbManager.connect("root","poodb"); 
 			dbManager.insert(comments1);
+
+			
+			
 		} catch (Exception e) {
 			result = false; 
 			e.printStackTrace();
@@ -37,6 +41,8 @@ public class TestDBMComments {
 	}
 	
 	
+
+	
 	@Test
 	public void testUpdate(){
 		boolean result = true;
@@ -47,14 +53,11 @@ public class TestDBMComments {
 		try {
 			dbManager.connect("root","poodb"); 
 			dbManager.insert(comments1);
-			
 				comments1.setMyUser("Don update"); 
 				comments1.setComments("Me han actualizado"); 
 				comments1.setDatum(new Date(124563)); 
 				
-			
-			dbManager.update(comments1); 
-			
+			dbManager.update(comments1); 			
 			commentsUpdated = dbManager.select(comments1.getId()); 
 			
 			
@@ -78,6 +81,7 @@ public class TestDBMComments {
 	
 	
 	
+	
 	@Test
 	public void testGet(){
 		boolean result = true;
@@ -87,8 +91,8 @@ public class TestDBMComments {
 		try {
 			dbManager.connect("root","poodb"); 
 			
-			dbManager.insert(comments1);
-			
+			int id = dbManager.insert(comments1);
+			comments1.setId(id); 
 			results = dbManager.select(comments1.getId()); 
 			
 		} catch (Exception e) {

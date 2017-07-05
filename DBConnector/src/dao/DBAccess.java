@@ -21,7 +21,7 @@ public interface DBAccess <T>{
 	 * @return
 	 * @throws SQLException 
 	 */
-	public T insert(T object) throws SQLException; 
+	public int insert(T object) throws SQLException;  
 	
 	/**
 	 * Actualiza un objeto de tipo T, donde T contiene las columnas de la labla a actualizar
