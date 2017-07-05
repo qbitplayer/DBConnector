@@ -1,5 +1,6 @@
 package test;
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -73,13 +74,13 @@ public class TestDBManager {
 		}
 
 		@Override
-		public Object select(int id) {
+		protected void checkColumn(String column) {
 			// TODO Auto-generated method stub
-			return null;
+			
 		}
 
 		@Override
-		public ArrayList select(String strSQL) {
+		protected ArrayList<?> resultSetToGeneric(ResultSet resultSet) throws SQLException {
 			// TODO Auto-generated method stub
 			return null;
 		}

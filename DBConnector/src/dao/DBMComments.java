@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
+import java.util.Arrays;
 import java.util.HashMap;
 
 import model.Comments;
@@ -17,6 +17,7 @@ public class DBMComments extends DBManager<Comments>{
 		super(dbhost, dbName, dbTable);
 	}
 
+	
 	@Override
 	public Comments insert(Comments object) throws SQLException { 
 		// TODO Auto-generated method stub
@@ -100,63 +101,32 @@ public class DBMComments extends DBManager<Comments>{
 		}
 		
 	}
-
-
-	@Override
-	public Comments select(int id) throws SQLException { 
-		String strSQL = "SELECT id, myuser, email, webpage, summary,datum,comments FROM "+
-				getDbTable() +" WHERE id = ?";
-
-		PreparedStatement preparedStatement=null; 
-		Comments comment = null; 
-		try {
-			
-			preparedStatement = getConnected()
-					.prepareStatement(strSQL);
-			
-			preparedStatement.setInt(1,id);
-			
-			ResultSet resultSet = preparedStatement.executeQuery(); 
-			
-			ArrayList<Comments> list = resultSetToComments(resultSet);
-			comment = list.get(0); 
-			 
-		} catch (SQLException e) {
-			close(); 
-			throw e;
-		} 
-		
-
-		return comment; 
-	}
-
-
-	
-	
 	
 
-	@Override
-	public ArrayList<Comments> select(String strSQL) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
+	
 	
 	
 	/**
-	 * Condiciones bajo las cuales se puede actualizar un objeto. 
-	 * @param object
+	 * recupera todos los tegistros con la condicion que: 
+	 * 
+	 * la columna column operador value, donde operador puede ser: 
+	 *    =	'value'
+	 *    !='value'
+	 *    >	'value'
+	 *    <	'value'
+	 *    >='value'
+	 *    <='value'
+	 *    BETWEEN	 ? 
+	 *    LIKE	'value%'    // use el % para indicar cualquier cosa
+	 *    IN	  ? 
+	 * @param string 
+	 * 
 	 */
-	private static void checkFormatUpdate(Comments object) {
-		if(object.getId()==-1){
-			throw new RuntimeException("El objeto que trata de actualizar no tiene un id valido"); 
-		}
-			
-	}
 	
-	
-	private ArrayList<Comments> resultSetToComments(ResultSet resultSet) throws SQLException {  
+
+
+	@Override
+	protected ArrayList<Comments> resultSetToGeneric(ResultSet resultSet) throws SQLException {  
 		 ArrayList<Comments> list = new ArrayList<>(); 
 		 
 		 while (resultSet.next()) {
@@ -180,13 +150,45 @@ public class DBMComments extends DBManager<Comments>{
 	            comment.setSummary(summary);
 	            comment.setComments(comments);
 	            comment.setWebpage(webpage);
-	            
-	           
-	            // adiciono el nuevo hashMap a el ArrayList<HashMap>
 	            list.add(comment);  
 	        }
 		 
 		 return list; 
+	}
+	
+
+
+	/**
+	 * Verifica si la columna esta en la tabla
+	 * @param column
+	 */
+	@Override
+	protected void checkColumn(String column) {
+		final ArrayList<String> columns = new ArrayList<String>(
+				Arrays.asList("id", "myuser", "email","datum","webpage","summary","comments"));
+		
+		if(!columns.contains(column))
+			throw new RuntimeException("Error la columna " 
+					+  column + "no hace parte de la tabla " + getDbTable()); 
+		
+	}
+
+
+	
+	
+	
+	
+	
+	
+	/**
+	 * Condiciones bajo las cuales se puede actualizar un objeto. 
+	 * @param object
+	 */
+	private static void checkFormatUpdate(Comments object) {
+		if(object.getId()==-1){
+			throw new RuntimeException("El objeto que trata de actualizar no tiene un id valido"); 
+		}
+			
 	}
 
 }

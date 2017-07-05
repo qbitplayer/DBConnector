@@ -6,6 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+
+import com.mysql.jdbc.CommunicationsException;
+
+import model.Comments;
 
 public abstract class DBManager<T> implements DBAccess<T>  { 
 	
@@ -20,8 +25,7 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	// TODO ojo no sera miembreo
 	private ResultSet resultSet;
 	
-	private PreparedStatement preparedStatement; 
-	  
+	
 	public DBManager(String dbhost,String dbName, String dbTable){
 		 this.dbTable = dbTable; 
 		 this.dbName = dbName;
@@ -48,6 +52,8 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	            //statement = connect.createStatement();
 	          
 		    }catch (ClassNotFoundException e){
+		    	System.err.println("Verifique que el driver este se ha incluido");
+		    	close(); 
 		    	throw e;  
 	        } catch (SQLException  e) {
 	        	close(); 
@@ -59,24 +65,130 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 	
 	@Override
 	 public void deleteAll() throws SQLException{
-		
+		PreparedStatement preparedStatement=null; 
 			try{
 				preparedStatement = connect
 				        .prepareStatement("truncate "+ dbTable);		        
 				preparedStatement.executeUpdate();	
 		         			
 		    } catch (SQLException e) {
-		    	close(); 
 	            throw e;
-			}finally {
-				
-			}	         
+		    }finally{
+				try {
+					preparedStatement.close();
+				} catch (Exception e1) {} 
+			}         
 	}
 	 
 
+
+	@Override
+	public void delete(int id) throws SQLException{	
+		PreparedStatement preparedStatement=null; 
+		try {
+			preparedStatement = getConnected()
+			        .prepareStatement("delete from "+getDbTable()+"  where id= ? ; ");
+			 preparedStatement.setInt(1, id);
+	         preparedStatement.executeUpdate();
+		
+	    } catch (SQLException e) {	    	
+            throw e;
+		}finally{
+			try {
+				preparedStatement.close();
+			} catch (Exception e1) {} 
+		}
+	}
 	
+	
+	@Override
+	public abstract T insert(T object) throws SQLException;   
+
+	@Override
+	public abstract void update(T object) throws SQLException; 
+
+
+	/*@Override
+	public abstract ArrayList<T> select(String column, String operator, String value) throws SQLException; 
+    */
+	
+	
+	
+	@Override
+	public T select(int id) throws SQLException { 
+		String strSQL = "SELECT * FROM "+
+				getDbTable() +" WHERE id = ?";
+
+		PreparedStatement preparedStatement=null; 
+		T generic = null; 
+		try {			
+			preparedStatement = getConnected()
+					.prepareStatement(strSQL);			
+			preparedStatement.setInt(1,id);			
+			ResultSet resultSet = preparedStatement.executeQuery(); 
+			
+			ArrayList<T> list = resultSetToGeneric(resultSet);
+			generic = list.get(0); 			 
+		} catch (SQLException e) {			
+			throw e;
+		}finally{
+			try {
+				preparedStatement.close();
+			} catch (Exception e1) {} 
+		}
+		return generic; 
+	}
 
 	
+	
+	@Override
+	public ArrayList<T> select(String column, String operator, String value)  throws SQLException { 
+		checkColumn(column); 
+		checkOperator(operator);  
+		String strSQL = "SELECT * FROM "+
+				getDbTable() +" WHERE "+ column +" "+ operator +" "+ value;
+
+		PreparedStatement preparedStatement=null; 
+		ArrayList<T> list=null; 
+		try {
+			
+			preparedStatement = getConnected()
+					.prepareStatement(strSQL);
+			ResultSet resultSet = preparedStatement.executeQuery(); 	
+			
+			list = resultSetToGeneric(resultSet);
+			
+		} catch (SQLException e) {			
+			throw e;
+		}finally{
+			try {
+				preparedStatement.close();
+			} catch (Exception e1) {} 
+		}
+		
+		return list; 
+	}
+	
+	
+	protected abstract void checkColumn(String column); 
+
+	protected abstract ArrayList<T> resultSetToGeneric(ResultSet resultSet) throws SQLException ; 
+	
+	/** Verifica que la operacion sea valida  
+	 * 
+	 * @param operator
+	 */
+	private void checkOperator(String operator) {
+		final ArrayList<String> columns = new ArrayList<String>(
+				Arrays.asList("=", "!=", "<>","<=",">=","<",">","LIKE","BETWEEN", "IN"));
+		if(!columns.contains(operator))
+			throw new RuntimeException("Error el operando " 
+					+  operator + "no es valido. "); 
+	}
+
+	
+
+
 	@Override
 	public void close() {
 	        try {
@@ -92,27 +204,6 @@ public abstract class DBManager<T> implements DBAccess<T>  {
 
 	        }
 	 }
-	
-	
-	
-	@Override
-	public abstract T insert(T object) throws SQLException;   
-
-	@Override
-	public abstract void update(T object) throws SQLException; 
-
-	@Override
-	public abstract T select(int id) throws SQLException; 
-
-	@Override
-	public abstract ArrayList<T> select(String strSQL); 
-
-	@Override
-	public void delete(int id) {
-		// TODO Auto-generated method stub
-		
-	}
-	
 	
 	/**  getters y setteres osea, metodos accesorios */ 
 	

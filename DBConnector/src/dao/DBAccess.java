@@ -41,17 +41,21 @@ public interface DBAccess <T>{
 	
 	/** Ejecuta un selec segun strSQL, y retorna un ArrayList con todos los objetos 
 	 * recuperados.  
-	 * @param strSQL
+	 * @param column
+	 * @param operator TODO
+	 * @param value TODO
 	 * @return
+	 * @throws SQLException 
 	 */
-	public ArrayList<T> select(String strSQL);
+	public ArrayList<T> select(String column, String operator, String value) throws SQLException;
 	
 	
 	/**
 	 * Elimina el registro segun el id
 	 * @param id
+	 * @throws SQLException 
 	 */
-	public void delete(int id);
+	public void delete(int id) throws SQLException; 
 	
 	/**
 	 * Elimina todos los objetos de la tabla, reinicia el contador de id
