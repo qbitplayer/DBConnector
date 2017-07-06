@@ -13,6 +13,10 @@ public class Table {
 	}
 
 	public int getColumns(){
-		return id;
+		return 0;
+	}
+	
+	public String getName(){
+		return getClass().getSimpleName(); 
 	}
 }

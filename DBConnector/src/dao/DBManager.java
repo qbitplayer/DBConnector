@@ -25,9 +25,11 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	
 	// TODO ojo no sera miembreo
 	private ResultSet resultSet;
+ 
 	
 	
 	public DBManager(String dbhost,String dbName, String dbTable){
+	
 		 this.dbTable = dbTable; 
 		 this.dbName = dbName;
 		 this.dbUri = "jdbc:mysql://host/dbName?user=root&password=12345";		 
@@ -102,17 +104,10 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	}
 	
 	
-	//@Override
-	//public abstract T insert(T object) throws SQLException;   
-
-
 
 	
 	
-	protected HashMap<String,Object> mapObjectToDb(T object){
-		return null; 
-	}
-
+	
 
 	@Override
 	public T select(int id) throws SQLException { 
@@ -160,6 +155,8 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 
 	@Override
 	public ArrayList<T> select(String column, String operator, String value)  throws SQLException { 
+
+		
 		checkOperator(operator);  
 		String strSQL = "SELECT * FROM "+
 				getDbTable() +" WHERE "+ column +" "+ operator +" "+ value;
@@ -206,13 +203,16 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 		 return list; 		
 	}
 	
+	
+	
+	
 	protected abstract T mapDbToObject(ResultSet resultSet) throws SQLException;  
 
 
+	protected abstract HashMap<String,Object> mapObjectToDb(T object); 
+
 	
 	
-	
-	/*********************  SQL statements *****************************/
 
 	
 	/** Verifica que la operacion sea valida  
@@ -266,6 +266,7 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	@Override
 	public int insert(T object) throws SQLException { 	
 		int lastInsertedId = -1; 
+		
 		HashMap<String,Object> mapColumn = mapObjectToDb(object); 		
 		String strSQL = getAnSQLInsert(mapColumn);  		
 		     // try con algumentos cierra automaticamente al finalizar
@@ -280,9 +281,9 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 			        ResultSet rs = preparedStatement.getGeneratedKeys();
 			        
 			        if(rs.next())
-			        	   lastInsertedId = rs.getInt(1);  
+			        	   lastInsertedId = rs.getInt(1);
 	
-			        object.setId(lastInsertedId);
+			        object.setId(lastInsertedId); 
 			        
 			} catch (SQLException e) {
 		        throw e;	        

@@ -3,6 +3,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,6 +67,13 @@ public class TestDBManager {
 
 		@Override
 		protected Table mapDbToObject(ResultSet resultSet) throws SQLException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+
+		@Override
+		protected HashMap mapObjectToDb(Table object) {
 			// TODO Auto-generated method stub
 			return null;
 		}
