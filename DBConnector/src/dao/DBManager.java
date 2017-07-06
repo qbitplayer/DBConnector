@@ -13,8 +13,11 @@ import java.util.HashMap;
 import model.Table;
 
 /**
- * <T extends Table> garantiza que todo T debe extender de Table
+ * Hipotetium ORM 
+ * Cualquier objeto mapeable debe extender de esta clase e implementar 
+ * los metodos de mapeo. 
  * 
+ * <T extends Table> garantiza que todo T debe extender de Table
  */
 public abstract class DBManager<T extends Table> implements DBAccess<T>  { 
 	
@@ -33,9 +36,24 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	 }
 	
 	
+	/**
+	 * Map los datos de la tabla a un objeto
+	 * @param resultSet
+	 * @return Objeto que extiende de Tabla
+	 * @throws SQLException
+	 */
 	protected abstract T mapDbToObject(ResultSet resultSet) throws SQLException;  
 
 
+	/**
+	 * 
+	 * Mapea los miembros de un objeto a columnas de una tabla.
+	 * Genera un HashMap  donde key representa las columnas de la tabla.
+	 * El value de HasMap representar el valor de los miembros del objeto 
+	 * de tipo T
+	 * @param object
+	 * @return
+	 */
 	protected abstract HashMap<String,Object> mapObjectToDb(T object); 
 
 	
@@ -60,7 +78,6 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	            throw e;
 	        }		
 	}
-	
 	
 	@Override
 	 public void deleteAll() throws SQLException{
@@ -166,71 +183,22 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	
 	
 	/**
-	 * Transforma el resultado de una consulta resultSet en un objeto de tipo 
-	 * T
+	 * Transforma el resultado de una consulta resultSet en un ArrayList del 
+	 * tipo generico  T
 	 * @param resultSet
 	 * @return lista de objetos de tipo T 
 	 * @throws SQLException
 	 */
-	protected  ArrayList<T> resultSetToGeneric(ResultSet resultSet)
-			throws SQLException{
-		
+	private  ArrayList<T> resultSetToGeneric(ResultSet resultSet)
+			throws SQLException{		
 		ArrayList<T> list = new ArrayList<>(); 		
-		 while (resultSet.next()) {
-			 
+		 while (resultSet.next()) {			 
 			    T generic= mapDbToObject(resultSet); 
-	            list.add(generic);  
-	        		 
+	            list.add(generic);      		 
 		 }		 
 		 return list; 		
 	}
 	
-	
-
-	
-	/** Verifica que la operacion sea valida  
-	 * 
-	 * @param operator
-	 */
-	private void checkOperator(String operator) {
-		final ArrayList<String> columns = new ArrayList<String>(
-				Arrays.asList("=", "!=", "<>","<=",">=","<",">","LIKE","BETWEEN", "IN"));
-		if(!columns.contains(operator))
-			throw new RuntimeException("Error el operando " 
-					+  operator + "no es valido. "); 
-	}
-
-	/**
-	 * Cerra la conexion 
-	 */
-	@Override
-	public void close() {
-	        try {	            
-	            if (connect != null) {
-	                connect.close();
-	                connect = null; 
-	            }  
-	        } catch (Exception e) {
-
-	        }
-	 }
-	
-	/**  getters y setteres osea, metodos accesorios */ 
-	
-	public String getDbName() {
-		return dbName;
-	}
-
-
-	public String getDbTable() {
-		return dbTable;
-	}
-	
-	protected Connection getConnected(){  
-		return connect; 
-	}
-	
-
 
 	@Override
 	public int insert(T object) throws SQLException { 	
@@ -278,15 +246,47 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 				
 			} catch (SQLException e) {
 		        throw e;	        
-			}			 		
+			}		 		
 	}
 	
+	
 	/**
+	 * Cierra la conexion, permite cerrar conexiones activas, use siempre que inicie una 
+	 * conexion con connect(), 
+	 */
+	@Override
+	public void close() {
+	        try {	            
+	            if (connect != null) {
+	                connect.close();
+	                connect = null; 
+	            }  
+	        } catch (Exception e) {
+
+	        }
+	 }
+	
+	
+	/** Verifica que la operacion sea valida 
+	 * @param operator
+	 */
+	private void checkOperator(String operator) {
+		final ArrayList<String> columns = new ArrayList<String>(
+				Arrays.asList("=", "!=", "<>","<=",">=","<",">","LIKE","BETWEEN", "IN"));
+		if(!columns.contains(operator))
+			throw new RuntimeException("Error el operando " 
+					+  operator + "no es valido. "); 
+	}
+	
+	
+	/**
+	 *  Fabrica una SQL segun: 
+	 *  UPDATE table SET
 	 *  " myuser=?, email=?, webpage = ?,datum=?, summary=?, comments=?  WHERE id=?"
+	 *  
 	 * @param mapObject
 	 * @return
-	 */
-	
+	 */	
 	private String getAnSQLUpdate(HashMap<String,Object> mapObject) {
 		  StringBuilder strSQL = new StringBuilder("UPDATE "+ getDbTable() + " SET "); 
 		  
@@ -300,16 +300,14 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 			      strSQL.append("=? "); 
 		   }
 		  
-		  strSQL.append(" WHERE id=? "); 
-		  
+		  strSQL.append(" WHERE id=? "); 	  
 		return strSQL.toString();	
 	}
 	
 	/**
-	 * 
+	 * Fabrica un SQL insert segun: 
 	 * INSERT INTO getDbTable() (id, column2, column3, column4, column5, column6)
 	 * VALUES (default, ?, ?, ?, ?, ?);
-	 * 
 	 * 
 	 * @param mapObject
 	 * @return
@@ -338,5 +336,17 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	}
 	
 	
+	
+	/**  getters y setteres osea, metodos accesorios */ 
+	
+	public String getDbName() {
+		return dbName;
+	}
+	public String getDbTable() {
+		return dbTable;
+	}	
+	protected Connection getConnected(){  
+		return connect; 
+	}
 	
 }

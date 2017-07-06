@@ -5,8 +5,6 @@ import java.util.ArrayList;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import model.Comments;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 

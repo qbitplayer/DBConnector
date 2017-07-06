@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 import dao.DBManager;
-import model.Comments;
 
 public class DBMComments extends DBManager<Comments>{
 

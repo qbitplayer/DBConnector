@@ -1,17 +1,16 @@
-package model;
+package test;
 
 import java.sql.Date;
 
+import model.Table;
+
 /**
- * Clase POJO 
- * @author adminCIFO
- *
+ * Clase mapeable a tabla 
+ * @author campino
  */
 
 public class Comments  extends Table{
 	    
-	  
-
 	    private String myUser; 
 		private String email;
 		private String webpage; 
@@ -22,7 +21,6 @@ public class Comments  extends Table{
 		public Comments(){
 			setId(-1); 
 		}
-		
 		
 		public String getMyUser() {
 			return myUser;

@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import dao.DBManager;
-import model.Comments;
 import model.Table;
 
 public class TestDBManager {
