@@ -12,21 +12,16 @@ import java.util.HashMap;
 
 import model.Table;
 
-/*
+/**
  * <T extends Table> garantiza que todo T debe extender de Table
+ * 
  */
-
 public abstract class DBManager<T extends Table> implements DBAccess<T>  { 
 	
 	private String dbName;
 	private final String dbTable;
 	private String dbUri;
 	private Connection connect;
-	
-	// TODO ojo no sera miembreo
-	private ResultSet resultSet;
- 
-	
 	
 	public DBManager(String dbhost,String dbName, String dbTable){
 	
@@ -38,22 +33,24 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	 }
 	
 	
+	protected abstract T mapDbToObject(ResultSet resultSet) throws SQLException;  
+
+
+	protected abstract HashMap<String,Object> mapObjectToDb(T object); 
+
+	
 	@Override
 	public void connect(String user, String password) 
 			throws SQLException, ClassNotFoundException {
+		
 		 try {
 	        	String uri =  dbUri.replace("root",user)
-	        			.replaceAll("12345", password); 
-	        	
+	        			.replaceAll("12345", password); 	        	
 	            // Cargar el driver MYSQL
 	            Class.forName("com.mysql.jdbc.Driver");
 	            // jdbc:mysql://ip database // database ? 
 	            connect = DriverManager
 	                    .getConnection(uri);
-
-	            // Statements allow to issue SQL queries to the database
-	            //statement = connect.createStatement();
-	          
 		    }catch (ClassNotFoundException e){
 		    	System.err.println("Verifique que el driver este se ha incluido");
 		    	close(); 
@@ -61,8 +58,7 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	        } catch (SQLException  e) {
 	        	close(); 
 	            throw e;
-	        } 
-		
+	        }		
 	}
 	
 	
@@ -84,7 +80,6 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	}
 	 
 
-
 	@Override
 	public void delete(int id) throws SQLException{	
 		PreparedStatement preparedStatement=null; 
@@ -103,11 +98,7 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 		}
 	}
 	
-	
 
-	
-	
-	
 
 	@Override
 	public T select(int id) throws SQLException { 
@@ -136,18 +127,18 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 
 	
 	/**
-	 * recupera todos los tegistros con la condicion que: 
-	 * 
-	 * la columna column operador value, donde operador puede ser: 
-	 *    =	'value'
-	 *    !='value'
-	 *    >	'value'
-	 *    <	'value'
-	 *    >='value'
-	 *    <='value'
-	 *    BETWEEN	 ? 
-	 *    LIKE	'value%'    // use el % para indicar cualquier cosa
-	 *    IN	  ? 
+	 * Recupera todos los registros con la condicion que: 
+	 * Utiliza la siguiente sintaxis, para realizar el query:
+	 *  Operador
+	 *    =			'value'
+	 *    !=		'value'
+	 *    >			'value'
+	 *    <			'value'
+	 *    >=		'value'
+	 *    <=		'value'
+	 *    BETWEEN	'value1' AND 'value2'  
+	 *    LIKE	    'value%'                 // use % para indicar cualquier cosa
+	 *    IN	    'value1', 'value2' 
 	 * @param string 
 	 * @throws SQLException 
 	 * 
@@ -155,30 +146,21 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 
 	@Override
 	public ArrayList<T> select(String column, String operator, String value)  throws SQLException { 
-
-		
+	
 		checkOperator(operator);  
 		String strSQL = "SELECT * FROM "+
 				getDbTable() +" WHERE "+ column +" "+ operator +" "+ value;
-
-		PreparedStatement preparedStatement=null; 
+		
 		ArrayList<T> list=null; 
-		try {
+		try (PreparedStatement preparedStatement=getConnected()
+				.prepareStatement(strSQL) ){
 			
-			preparedStatement = getConnected()
-					.prepareStatement(strSQL);
-			ResultSet resultSet = preparedStatement.executeQuery(); 	
-			
+			ResultSet resultSet = preparedStatement.executeQuery();			
 			list = resultSetToGeneric(resultSet);
 			
 		} catch (SQLException e) {			
 			throw e;
-		}finally{
-			try {
-				preparedStatement.close();
-			} catch (Exception e1) {} 
-		}
-		
+		}		
 		return list; 
 	}
 	
@@ -204,15 +186,6 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	}
 	
 	
-	
-	
-	protected abstract T mapDbToObject(ResultSet resultSet) throws SQLException;  
-
-
-	protected abstract HashMap<String,Object> mapObjectToDb(T object); 
-
-	
-	
 
 	
 	/** Verifica que la operacion sea valida  
@@ -232,11 +205,7 @@ public abstract class DBManager<T extends Table> implements DBAccess<T>  {
 	 */
 	@Override
 	public void close() {
-	        try {
-	            if (resultSet != null) {
-	                resultSet.close();
-	                resultSet=null; 
-	            }	     
+	        try {	            
 	            if (connect != null) {
 	                connect.close();
 	                connect = null; 
